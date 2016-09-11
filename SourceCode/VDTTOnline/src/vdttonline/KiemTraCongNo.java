@@ -1,4 +1,3 @@
-
 package vdttonline;
 
 import java.io.File;
@@ -15,20 +14,31 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 
+import org.apache.poi.xssf.eventusermodel.XSSFReader;
+import org.apache.poi.xssf.model.SharedStringsTable;
+import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
+import org.xml.sax.helpers.XMLReaderFactory;
+
 public class KiemTraCongNo {
-    
+
     StringBuilder stringBD = null;
 
     File fileExcel = null;
-    FileInputStream fileIn = null;
-    FileOutputStream fileOut = null;
-
+//    FileInputStream fileIn = null;
+//    FileOutputStream fileOut = null;
 
     HSSFWorkbook wbH = null;
     HSSFSheet sheetH = null;
@@ -58,35 +68,23 @@ public class KiemTraCongNo {
             stringBD = new StringBuilder(filePath);
             stringBD.append(fileName);
 
-            fileIn = new FileInputStream(stringBD.toString());
+      
 
-            if (LayPhanMoRongFile(fileName).equals("xls")) {
-                wbH = new HSSFWorkbook(fileIn);
-                sheetH = wbH.getSheet(wbName);
-                int rowNum = sheetH.getLastRowNum() + 1;
+            if (LayPhanMoRongFile(fileName).equals("xlsx")) {
+                OPCPackage pkg = OPCPackage.open(new File(stringBD.toString()));
+              XSSFReader r = new XSSFReader( pkg );
+		SharedStringsTable sst = r.getSharedStringsTable();
 
-                for (int i = rowNum - 1; i > 0; i--) {
-                    rowH = sheetH.getRow(i);
-                    cellH = rowH.getCell(0);
-                    if ((cellH != null && cellH.getCellType() == HSSFCell.CELL_TYPE_NUMERIC) && DateUtil.isCellDateFormatted(cellH) && cellH.getDateCellValue().compareTo(dateCompare) == 0) {
-                        System.out.println("Dòng: "+i);
-                        flag = true;
-                        break;
-                    }
+		
 
-                }
-            } else if (LayPhanMoRongFile(fileName).equals("xlsx")) {
-  OPCPackage pkg = OPCPackage.open(fileName);
-                wbX = new XSSFWorkbook(fileIn);
-                sheetX = wbX.getSheet(wbName);
                 int rowNum = sheetX.getLastRowNum() + 1;
-                
+
                 System.out.println(rowNum);
                 for (int i = rowNum - 1; i > 0; i--) {
                     rowX = sheetX.getRow(i);
                     cellX = rowX.getCell(0);
                     if ((cellX != null && cellX.getCellType() == XSSFCell.CELL_TYPE_NUMERIC) && DateUtil.isCellDateFormatted(cellX) && cellX.getDateCellValue().compareTo(dateCompare) == 0) {
-                        System.out.println("Dòng: "+i);
+                        System.out.println("Dòng: " + i);
                         flag = true;
                         break;
                     }
@@ -110,13 +108,20 @@ public class KiemTraCongNo {
             stringBD.append("/----/KiemTraCongNo.KiemTraTongHangNgay.Exception: ");
             stringBD.append(e.getMessage());
             System.out.println(stringBD.toString());
-      
+            e.printStackTrace();
+
         } finally {
 
         }
         return flag;
     }
 
+
+    
+    
+    
+    
+    
     /**
      * Lấy phần mở rộng File (xls hoặc xlsx)
      *
@@ -146,5 +151,5 @@ public class KiemTraCongNo {
         File tempFile = new File(stringBD.toString());
         return fileExcel.renameTo(tempFile); //File đang ĐÓNG trả về TRUE    
     }
-    
+
 }
